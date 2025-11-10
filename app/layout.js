@@ -1,4 +1,5 @@
 import './globals.css';
+import Link from 'next/link'; // Add this import
 
 export const metadata = {
   title: 'Prompt Management',
@@ -27,30 +28,30 @@ export default function RootLayout({ children }) {
                 {/* Navigation Menu */}
                 <div className="hidden md:block">
                   <div className="ml-10 flex items-baseline space-x-4">
-                    <a
+                    <Link
                       href="/"
                       className="text-gray-900 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                     >
                       My Prompts
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                       href="/about"
                       className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                     >
                       About Prompts
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                       href="/new-prompt"
                       className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                     >
                       New Prompt
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                       href="/settings"
                       className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                     >
                       Settings
-                    </a>
+                    </Link>
                   </div>
                 </div>
 
@@ -83,30 +84,30 @@ export default function RootLayout({ children }) {
             {/* Mobile menu (hidden by default) */}
             <div className="md:hidden hidden">
               <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
-                <a
+                <Link
                   href="/"
                   className="text-gray-900 block px-3 py-2 rounded-md text-base font-medium"
                 >
                   My Prompts
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/about"
                   className="text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
                 >
                   About Prompts
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/new-prompt"
                   className="text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
                 >
                   New Prompt
-                </a>
-                <a
+                </Link>
+                <Link
                   href="/settings"
                   className="text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
                 >
                   Settings
-                </a>
+                </Link>
               </div>
             </div>
           </nav>
