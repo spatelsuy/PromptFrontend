@@ -2,7 +2,7 @@ import './globals.css';
 import Link from 'next/link'; // Add this import
 
 export const metadata = {
-  title: 'Prompt Management',
+  title: 'Prompt Management and Library',
   description: 'Manage and edit your AI prompts',
 }
 
