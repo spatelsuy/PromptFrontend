@@ -18,6 +18,7 @@ export default function PromptsPage() {
   const [selectedVersions, setSelectedVersions] = useState({});
   const [editingPromptId, setEditingPromptId] = useState(null);
   const [editedContent, setEditedContent] = useState('');
+  const [formattingPromptId, setFormattingPromptId] = useState(null);
 
   // Filter prompts based on search
   const filteredPrompts = prompts.filter(prompt => 
@@ -203,6 +204,42 @@ export default function PromptsPage() {
     }
   };
 
+  // Format prompt using AI
+  const formatPromptWithAI = async (promptId, currentContent) => {
+    try {
+      setFormattingPromptId(promptId);
+      
+      // Call your formatting API
+      const response = await fetch('/api/format-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: currentContent,
+          instruction: "Format this prompt to follow industry best practices. Improve clarity, structure, and effectiveness while maintaining the original intent."
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to format prompt');
+      }
+
+      const result = await response.json();
+      
+      // Update the edited content with formatted version
+      setEditedContent(result.formattedPrompt);
+      
+      alert('Prompt formatted successfully! You can review the changes and save as new version.');
+      
+    } catch (error) {
+      console.error('Error formatting prompt:', error);
+      alert('Failed to format prompt. Please try again.');
+    } finally {
+      setFormattingPromptId(null);
+    }
+  };
+
   const handleCopyPrompt = async (prompt, promptText) => {
     const selectedVersion = promptVersions[prompt.prompt_id]?.find(v => v.version_id === selectedVersions[prompt.prompt_id]);
     const contentToCopy = selectedVersion?.prompt_text || promptText;
@@ -211,7 +248,6 @@ export default function PromptsPage() {
 
     try {
       await navigator.clipboard.writeText(fullPromptText);
-      // Show subtle notification instead of alert
       console.log('Prompt copied to clipboard!');
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
@@ -315,22 +351,16 @@ export default function PromptsPage() {
           </div>
         </div>
 
-        {/* Stats Bar */}
+        {/* Stats Bar - Updated Order */}
         <div className="mb-8 fade-in">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto">
-            <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-200">
-              <div className="text-2xl font-bold text-blue-600">{prompts.length}</div>
-              <div className="text-sm text-gray-600">Total Prompts</div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
             <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-200">
               <div className="text-2xl font-bold text-green-600">{categories.length}</div>
               <div className="text-sm text-gray-600">Categories</div>
             </div>
             <div className="bg-white rounded-xl p-4 text-center shadow-sm border border-gray-200">
-              <div className="text-2xl font-bold text-purple-600">
-                {prompts.reduce((acc, prompt) => acc + (promptVersions[prompt.prompt_id]?.length || 0), 0)}
-              </div>
-              <div className="text-sm text-gray-600">Total Versions</div>
+              <div className="text-2xl font-bold text-blue-600">{prompts.length}</div>
+              <div className="text-sm text-gray-600">Total Prompts</div>
             </div>
           </div>
         </div>
@@ -356,7 +386,7 @@ export default function PromptsPage() {
           </div>
         )}
 
-        {/* Categories List - Improved UX Design */}
+        {/* Categories List */}
         <div className="space-y-6 max-w-6xl mx-auto">
           {categories.map((category) => {
             const categoryPrompts = promptsByCategory[category] || [];
@@ -398,6 +428,7 @@ export default function PromptsPage() {
                       const selectedVersionId = selectedVersions[prompt.prompt_id];
                       const selectedVersion = versions.find(v => v.version_id === selectedVersionId);
                       const isEditing = isEditingPrompt(prompt.prompt_id);
+                      const isFormatting = formattingPromptId === prompt.prompt_id;
                       
                       const nextVersionNumber = getNextVersionNumber(prompt.prompt_id);
                       const selectedVersionNumber = getSelectedVersionNumber(prompt.prompt_id);
@@ -441,7 +472,7 @@ export default function PromptsPage() {
                               </div>
                             </div>
 
-                            {/* Expanded Content - Improved Layout */}
+                            {/* Expanded Content */}
                             {isPromptExpanded && (
                               <div className="border-t border-gray-100 p-6 animate-fade-in">
                                 {/* Edit Mode Message */}
@@ -454,20 +485,42 @@ export default function PromptsPage() {
                                   </div>
                                 )}
 
-                                {/* PROMPT CONTENT - MOVED TO TOP */}
+                                {/* PROMPT CONTENT - AT THE TOP */}
                                 <div className="mb-6">
                                   <h4 className="font-medium text-gray-900 mb-3 text-sm uppercase tracking-wide text-gray-500">
                                     Prompt Content
                                   </h4>
                                   {isEditing ? (
-                                    <textarea
-                                      value={editedContent}
-                                      onChange={(e) => setEditedContent(e.target.value)}
-                                      className="w-full h-48 p-4 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
-                                      placeholder="Enter your prompt content here..."
-                                    />
+                                    <div className="space-y-4">
+                                      <textarea
+                                        value={editedContent}
+                                        onChange={(e) => setEditedContent(e.target.value)}
+                                        className="w-full h-48 p-4 border border-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                                        placeholder="Enter your prompt content here..."
+                                      />
+                                      {/* Format Button during Editing */}
+                                      <div className="flex justify-end">
+                                        <button
+                                          onClick={() => formatPromptWithAI(prompt.prompt_id, editedContent)}
+                                          disabled={isFormatting || !editedContent.trim()}
+                                          className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                        >
+                                          {isFormatting ? (
+                                            <>
+                                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                              <span>Formatting...</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <span>✨</span>
+                                              <span>Format with AI</span>
+                                            </>
+                                          )}
+                                        </button>
+                                      </div>
+                                    </div>
                                   ) : (
-                                    /* Simplified prompt content - clean background */
+                                    /* Clean prompt content display */
                                     <div className="p-4">
                                       <pre className="whitespace-pre-wrap text-sm text-gray-800 font-sans leading-relaxed">
                                         {selectedVersion?.prompt_text || prompt.prompt_text}
@@ -476,7 +529,7 @@ export default function PromptsPage() {
                                   )}
                                 </div>
 
-                                {/* Version and Actions - MOVED TO BOTTOM */}
+                                {/* Version and Actions - AT THE BOTTOM */}
                                 <div className="flex items-center justify-between pt-4 border-t border-gray-200">
                                   <div className="flex items-center space-x-4">
                                     <label className="text-sm font-medium text-gray-700">Select Version:</label>
