@@ -20,7 +20,7 @@ export default function NewPrompt() {
     setImprovedData(null);
 
     try {
-      const response = await fetch('http://localhost:5000/api/ai/format-prompt', {
+      const response = await fetch('https://promptdbservice.onrender.com/api/ai/format-prompt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ export default function NewPrompt() {
     setLoadingTestPrompt(true);
 	setResponseTestData(null);
     try {
-      const response = await fetch('http://localhost:5000/api/ai/generate', {
+      const response = await fetch('https://promptdbservice.onrender.com/api/ai/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
