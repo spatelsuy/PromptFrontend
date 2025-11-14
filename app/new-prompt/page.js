@@ -11,29 +11,29 @@ export default function NewPrompt() {
   const [loadingImprovement, setLoadingImprovement] = useState(false);
   const [loadingTestPrompt, setLoadingTestPrompt] = useState(false);
   const [improvedData, setImprovedData] = useState(null);
+  const [responseTestData, setResponseTestData] = useState(null);
 
   const handleImprovePrompt = async () => {
     if (!prompt.trim()) return;
     
     setLoadingImprovement(true);
     setImprovedData(null);
-    
+
     try {
-      const response = await fetch('/api/improve-prompt', {
+      const response = await fetch('http://localhost:5000/api/ai/format-prompt', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          topic: topic,
           prompt: prompt
         }),
       });
-
+	
       if (!response.ok) {
         throw new Error('Failed to improve prompt');
       }
-
+		
       const data = await response.json();
       setImprovedData(data);
       
@@ -46,27 +46,44 @@ export default function NewPrompt() {
   };
 
   const handleUseImprovedPrompt = () => {
-    if (improvedData?.improvedPrompt) {
-      setPrompt(improvedData.improvedPrompt);
-      setImprovedData(null); // Hide the improvement section after use
-    }
-  };
+  if (improvedData?.formattedPrompt) { 
+    setPrompt(improvedData.formattedPrompt);
+    setImprovedData(null); // Hide the improvement section after use
+  }
+};
 
   const handleTestPrompt = async () => {
     if (!prompt.trim()) return;
     
     setLoadingTestPrompt(true);
+	setResponseTestData(null);
     try {
-      // TODO: Implement test prompt logic
-      console.log('Testing prompt:', prompt);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert('Test prompt feature will be implemented in next step!');
+      const response = await fetch('http://localhost:5000/api/ai/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: prompt
+        }),
+      });
+	
+      if (!response.ok) {
+        throw new Error('Failed to improve prompt');
+      }
+		
+      const data = await response.json();
+	  setResponseTestData(data);
+	  alert(data.generatedText);
+      
     } catch (error) {
-      console.error('Error testing prompt:', error);
+      console.error('Error improving prompt:', error);
+      alert('Failed to improve prompt. Please try again.');
     } finally {
       setLoadingTestPrompt(false);
-    }
+    }	  
   };
+
 
   const handleSavePrompt = async () => {
     if (!topic.trim() || !prompt.trim()) {
@@ -195,38 +212,24 @@ export default function NewPrompt() {
           {/* Improved Prompt Section */}
           {improvedData && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-green-800 mb-3">
-                Improved Prompt
-              </h3>
+			  <h3 className="text-lg font-semibold text-green-800 mb-3">Improved Prompt</h3>
               <div className="bg-white rounded p-4 border mb-3">
-                <p className="text-gray-800 whitespace-pre-wrap">
-                  {improvedData.improvedPrompt}
-                </p>
+			  	<p className="text-gray-800 whitespace-pre-wrap">{improvedData.formattedPrompt}</p>
               </div>
-              
-              <div className="mb-4">
-                <h4 className="font-medium text-green-700 mb-2">Improvements Made:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {improvedData.suggestions.map((suggestion, index) => (
-                    <span 
-                      key={index} 
-                      className="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full"
-                    >
-                      {suggestion}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <button 
-                onClick={handleUseImprovedPrompt}
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors"
-              >
-                Use This Improved Prompt
-              </button>
+              	<button onClick={handleUseImprovedPrompt} className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors">Use This Improved Prompt</button>
             </div>
           )}
 
+          {/* Test Prompt Section */}
+          {responseTestData && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-green-800 mb-3">Prompt Response</h3>
+              <div className="bg-white rounded p-4 border mb-3">
+                <p className="text-gray-800 whitespace-pre-wrap">{responseTestData.generatedText}</p>
+              </div>
+            </div>
+          )}
+	
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <button
